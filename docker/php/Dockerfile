@@ -6,6 +6,7 @@ RUN apk add --no-cache \
     nginx \
     openjdk8 \
     npm \
+    yarn \
     libpng-dev \
     libzip-dev \
     libxml2-dev \

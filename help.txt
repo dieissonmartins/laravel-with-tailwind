@@ -1,3 +1,8 @@
 sudo chmod o+w ./storage/ -R
 
 sudo chmod -R 777 bootstrap/cache/
+
+yarn add -D tailwindcss postcss autoprefixer
+
+yarn dev
+
