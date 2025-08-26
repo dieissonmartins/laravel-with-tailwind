@@ -1,0 +1,38 @@
+services:
+    php:
+        container_name: laravel-with-tailwind-php
+        build: docker/php
+        user: "1000:1000"
+        environment:
+            - DEBUG=1
+        working_dir: /var/www/laravel-with-tailwind
+        volumes:
+            - ./:/var/www/laravel-with-tailwind
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        depends_on:
+            - mysql
+
+    nginx:
+        container_name: laravel-with-tailwind-nginx
+        build: docker/nginx
+        links:
+            - php
+        ports:
+            - "8005:80"
+        working_dir: /var/www/laravel-with-tailwind
+        volumes:
+            - ./:/var/www/laravel-with-tailwind
+
+    mysql:
+        container_name: laravel-with-tailwind-mysql
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: hgytqchk
+            MYSQL_USER: hgytqchk
+            MYSQL_PASSWORD: ztrRsaPjQKtaik8JuIKf98LCUhHJiCCh
+            MYSQL_ROOT_PASSWORD: ztrRsaPjQKtaik8JuIKf98LCUhHJiCCh
+        ports:
+            - "3307:3306"
+        volumes:
+            - ./data/mysql:/var/lib/mysql
