@@ -21,3 +21,7 @@ Route::get('/produtos', function () {
 Route::get('/vendas', function () {
     return "<p>Esta é a página de vendas.</p>";
 });
+
+Route::get('/painel', function () {
+    return "<p>Painel</p>";
+});

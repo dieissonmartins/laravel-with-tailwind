@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema com Abas - Bootstrap + FontAwesome</title>
+    <title>Sistema com Abas - Limite de Abas</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,33 +14,88 @@
     <!-- Alpine.js -->
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
-<body class="p-4" x-data="{
-    tabs: [],
-    activeTab: null,
-    openTab(title, url, icon) {
-        let existing = this.tabs.find(tab => tab.url === url);
-        if (existing) {
-            this.activeTab = existing.id; // ativa se já existir
-        } else {
-            let newTab = { id: Date.now(), title, url, icon };
-            this.tabs.push(newTab);
-            this.activeTab = newTab.id;
+<body class="p-4"
+      x-data="{
+        tabs: [],
+        activeTab: null,
+        maxTabs: 5, // limite de abas
+
+        // Abre aba nova ou ativa se já existir
+        openTab(title, url, icon) {
+            let existing = this.tabs.find(tab => tab.url === url);
+            if (existing) {
+                this.activeTab = existing.id;
+            } else {
+                if (this.tabs.length >= this.maxTabs) {
+                    alert('Você só pode abrir no máximo ' + this.maxTabs + ' abas.');
+                    return;
+                }
+                let newTab = { id: Date.now(), title, url, icon };
+                this.tabs.push(newTab);
+                this.activeTab = newTab.id;
+                this.saveTabs();
+            }
+        },
+
+        // Fecha aba
+        closeTab(tabId) {
+            this.tabs = this.tabs.filter(t => t.id !== tabId);
+            if (this.activeTab === tabId) {
+                this.activeTab = this.tabs.length ? this.tabs[0].id : null;
+            }
+            // Se nenhuma aba restar, reabre a padrão
+            if (!this.tabs.length) {
+                this.openDefaultTab();
+            }
+            this.saveTabs();
+        },
+
+        // Salvar abas no localStorage
+        saveTabs() {
+            localStorage.setItem('tabs', JSON.stringify(this.tabs));
+            localStorage.setItem('activeTab', this.activeTab);
+        },
+
+        // Carregar abas do localStorage
+        loadTabs() {
+            let savedTabs = localStorage.getItem('tabs');
+            let savedActive = localStorage.getItem('activeTab');
+            if (savedTabs) this.tabs = JSON.parse(savedTabs);
+            if (savedActive) this.activeTab = parseInt(savedActive);
+
+            // Se não houver abas salvas, abre a padrão
+            if (!this.tabs.length) {
+                this.openDefaultTab();
+            }
+        },
+
+        // Aba padrão
+        openDefaultTab() {
+            let defaultTab = {
+                id: Date.now(),
+                title: 'Painel de Controle',
+                url: '/painel',
+                icon: 'fa-solid fa-gauge-high'
+            };
+            this.tabs.push(defaultTab);
+            this.activeTab = defaultTab.id;
+            this.saveTabs();
         }
-    }
-}">
+      }"
+      x-init="loadTabs()">
 
 <!-- Botões para abrir abas -->
 <div class="mb-3">
     <button class="btn btn-primary me-2"
-            @click="openTab('Clientes', '/clientes', 'fa-users')">
+            @click="openTab('Clientes', '/clientes', 'fa-solid fa-users')">
         <i class="fa-solid fa-users me-1"></i> Abrir Clientes
     </button>
     <button class="btn btn-success me-2"
-            @click="openTab('Produtos', '/produtos', 'fa-box')">
+            @click="openTab('Produtos', '/produtos', 'fa-solid fa-box')">
         <i class="fa-solid fa-box me-1"></i> Abrir Produtos
     </button>
     <button class="btn btn-warning me-2"
-            @click="openTab('Vendas', '/vendas', 'fa-cash-register')">
+            @click="openTab('Vendas', '/vendas', 'fa-solid fa-cash-register')">
         <i class="fa-solid fa-cash-register me-1"></i> Abrir Vendas
     </button>
 </div>
@@ -52,7 +107,7 @@
             <button
                 class="nav-link d-flex align-items-center"
                 :class="activeTab === tab.id ? 'active' : ''"
-                @click="activeTab = tab.id">
+                @click="activeTab = tab.id; saveTabs()">
 
                 <!-- Ícone -->
                 <i class="me-1" :class="tab.icon"></i>
@@ -61,14 +116,9 @@
                 <span x-text="tab.title"></span>
 
                 <!-- Botão fechar -->
-                <span class="ms-2 text-danger fw-bold"
-                      style="cursor: pointer;"
-                      @click.stop="
-                            tabs = tabs.filter(t => t.id !== tab.id);
-                            if(activeTab === tab.id) activeTab = tabs.length ? tabs[0].id : null
-                          ">
-                        ×
-                    </span>
+                <i class="fa-solid fa-xmark ms-2 text-danger"
+                   style="cursor: pointer;"
+                   @click.stop="closeTab(tab.id)"></i>
             </button>
         </li>
     </template>
@@ -76,10 +126,6 @@
 
 <!-- Conteúdo das abas -->
 <div class="tab-content border p-3">
-    <template x-if="!tabs.length">
-        <p class="text-muted">Nenhuma aba aberta</p>
-    </template>
-
     <template x-for="tab in tabs" :key="tab.id">
         <div class="tab-pane fade"
              :class="activeTab === tab.id ? 'show active' : ''">
