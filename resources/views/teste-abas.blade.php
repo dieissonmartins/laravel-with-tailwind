@@ -14,75 +14,8 @@
     <!-- Alpine.js -->
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
-<body class="p-4"
-      x-data="{
-        tabs: [],
-        activeTab: null,
-        maxTabs: 5, // limite de abas
 
-        // Abre aba nova ou ativa se já existir
-        openTab(title, url, icon) {
-            let existing = this.tabs.find(tab => tab.url === url);
-            if (existing) {
-                this.activeTab = existing.id;
-            } else {
-                if (this.tabs.length >= this.maxTabs) {
-                    alert('Você só pode abrir no máximo ' + this.maxTabs + ' abas.');
-                    return;
-                }
-                let newTab = { id: Date.now(), title, url, icon };
-                this.tabs.push(newTab);
-                this.activeTab = newTab.id;
-                this.saveTabs();
-            }
-        },
-
-        // Fecha aba
-        closeTab(tabId) {
-            this.tabs = this.tabs.filter(t => t.id !== tabId);
-            if (this.activeTab === tabId) {
-                this.activeTab = this.tabs.length ? this.tabs[0].id : null;
-            }
-            // Se nenhuma aba restar, reabre a padrão
-            if (!this.tabs.length) {
-                this.openDefaultTab();
-            }
-            this.saveTabs();
-        },
-
-        // Salvar abas no localStorage
-        saveTabs() {
-            localStorage.setItem('tabs', JSON.stringify(this.tabs));
-            localStorage.setItem('activeTab', this.activeTab);
-        },
-
-        // Carregar abas do localStorage
-        loadTabs() {
-            let savedTabs = localStorage.getItem('tabs');
-            let savedActive = localStorage.getItem('activeTab');
-            if (savedTabs) this.tabs = JSON.parse(savedTabs);
-            if (savedActive) this.activeTab = parseInt(savedActive);
-
-            // Se não houver abas salvas, abre a padrão
-            if (!this.tabs.length) {
-                this.openDefaultTab();
-            }
-        },
-
-        // Aba padrão
-        openDefaultTab() {
-            let defaultTab = {
-                id: Date.now(),
-                title: 'Painel de Controle',
-                url: '/painel',
-                icon: 'fa-solid fa-gauge-high'
-            };
-            this.tabs.push(defaultTab);
-            this.activeTab = defaultTab.id;
-            this.saveTabs();
-        }
-      }"
-      x-init="loadTabs()">
+<body class="p-4" x-data="tabsComponent" x-init="loadTabs()">
 
 <!-- Botões para abrir abas -->
 <div class="mb-3">
@@ -136,5 +69,71 @@
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('tabsComponent', () => ({
+            tabs: [],
+            activeTab: null,
+            maxTabs: 5,
+
+            openTab(title, url, icon) {
+                let existing = this.tabs.find(tab => tab.url === url);
+                if (existing) {
+                    this.activeTab = existing.id;
+                } else {
+                    if (this.tabs.length >= this.maxTabs) {
+                        alert('Você só pode abrir no máximo ' + this.maxTabs + ' abas.');
+                        return;
+                    }
+                    let newTab = {id: Date.now(), title, url, icon};
+                    this.tabs.push(newTab);
+                    this.activeTab = newTab.id;
+                    this.saveTabs();
+                }
+            },
+
+            closeTab(tabId) {
+                this.tabs = this.tabs.filter(t => t.id !== tabId);
+                if (this.activeTab === tabId) {
+                    this.activeTab = this.tabs.length ? this.tabs[0].id : null;
+                }
+                if (!this.tabs.length) {
+                    this.openDefaultTab();
+                }
+                this.saveTabs();
+            },
+
+            saveTabs() {
+                localStorage.setItem('tabs', JSON.stringify(this.tabs));
+                localStorage.setItem('activeTab', this.activeTab);
+            },
+
+            loadTabs() {
+                let savedTabs = localStorage.getItem('tabs');
+                let savedActive = localStorage.getItem('activeTab');
+                if (savedTabs) this.tabs = JSON.parse(savedTabs);
+                if (savedActive) this.activeTab = parseInt(savedActive);
+                if (!this.tabs.length) {
+                    this.openDefaultTab();
+                }
+            },
+
+            openDefaultTab() {
+                let defaultTab = {
+                    id: Date.now(),
+                    title: 'Painel de Controle',
+                    url: '/painel',
+                    icon: 'fa-solid fa-gauge-high'
+                };
+                this.tabs.push(defaultTab);
+                this.activeTab = defaultTab.id;
+                this.saveTabs();
+            }
+        }));
+    });
+</script>
+
+
 </body>
 </html>
